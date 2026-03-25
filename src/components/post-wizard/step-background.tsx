@@ -6,55 +6,67 @@ interface StepBackgroundProps {
   category: string;
   value: string;
   onChange: (v: string) => void;
+  sheetsBackgrounds?: string[];
+  loading?: boolean;
 }
-
-// Placeholder backgrounds - replace with real URLs from your assets
-const SAMPLE_BACKGROUNDS: Record<string, string[]> = {
-  Autoridade: [
-    "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1080&h=1350&fit=crop",
-    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1080&h=1350&fit=crop",
-    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1080&h=1350&fit=crop",
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1080&h=1350&fit=crop",
-  ],
-  Educativo: [
-    "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1080&h=1350&fit=crop",
-    "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1080&h=1350&fit=crop",
-    "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1080&h=1350&fit=crop",
-    "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1080&h=1350&fit=crop",
-  ],
-};
 
 export default function StepBackground({
   category,
   value,
   onChange,
+  sheetsBackgrounds = [],
+  loading = false,
 }: StepBackgroundProps) {
   const [customUrl, setCustomUrl] = useState("");
-  const backgrounds = SAMPLE_BACKGROUNDS[category] || SAMPLE_BACKGROUNDS["Autoridade"] || [];
+
+  // Remove duplicates
+  const uniqueBackgrounds = [...new Set(sheetsBackgrounds)];
 
   return (
     <div>
       <h2 className="mb-4 text-lg font-bold text-white">Background</h2>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {backgrounds.map((url, i) => (
-          <button
-            key={i}
-            onClick={() => onChange(url)}
-            className={`aspect-[1080/1350] overflow-hidden rounded-xl border-2 transition-all ${
-              value === url
-                ? "border-[#4f8a3c] ring-2 ring-[#4f8a3c] scale-105"
-                : "border-[#444] hover:border-[#666]"
-            }`}
-          >
-            <img
-              src={url}
-              alt={`BG ${i + 1}`}
-              className="h-full w-full object-cover"
-            />
-          </button>
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#4f8a3c] border-t-transparent" />
+          <span className="ml-3 text-sm text-[#a0a0a0]">
+            Carregando backgrounds da planilha...
+          </span>
+        </div>
+      ) : uniqueBackgrounds.length > 0 ? (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {uniqueBackgrounds.map((url, i) => (
+            <button
+              key={i}
+              onClick={() => onChange(url)}
+              className={`aspect-[1080/1350] overflow-hidden rounded-xl border-2 transition-all ${
+                value === url
+                  ? "border-[#4f8a3c] ring-2 ring-[#4f8a3c] scale-105"
+                  : "border-[#444] hover:border-[#666]"
+              }`}
+            >
+              <img
+                src={url}
+                alt={`BG ${i + 1}`}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='125' fill='%23333'%3E%3Crect width='100' height='125'/%3E%3Ctext x='50' y='62' text-anchor='middle' fill='%23666' font-size='12'%3EErro%3C/text%3E%3C/svg%3E";
+                }}
+              />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-[#444] bg-[#1a1a1a] p-6 text-center">
+          <p className="text-sm text-[#a0a0a0]">
+            Nenhum background encontrado na planilha.
+          </p>
+          <p className="mt-1 text-xs text-[#666]">
+            Adicione URLs na coluna &quot;URL BG&quot; da planilha.
+          </p>
+        </div>
+      )}
 
       <div className="mt-4">
         <p className="mb-2 text-sm text-[#a0a0a0]">Ou cole uma URL de imagem:</p>

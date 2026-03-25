@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CATEGORIES } from "@/types/post";
-import type { PostText, PostElement } from "@/types/post";
+import type { PostText, PostElement, SheetsRow } from "@/types/post";
 import { CATEGORY_LAYOUTS } from "@/lib/categories";
 import StepType from "@/components/post-wizard/step-type";
 import StepCategory from "@/components/post-wizard/step-category";
@@ -40,6 +40,24 @@ export default function NovoPostPage() {
   const [saving, setSaving] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [saved, setSaved] = useState(false);
+  const [sheetsData, setSheetsData] = useState<SheetsRow[]>([]);
+  const [sheetsLoading, setSheetsLoading] = useState(true);
+
+  // Load sheets data on mount
+  useEffect(() => {
+    async function loadSheets() {
+      try {
+        const res = await fetch("/api/sheets/data");
+        const data = await res.json();
+        if (data.rows) setSheetsData(data.rows);
+      } catch (error) {
+        console.error("Error loading sheets:", error);
+      } finally {
+        setSheetsLoading(false);
+      }
+    }
+    loadSheets();
+  }, []);
 
   const canNext = () => {
     switch (step) {
@@ -127,7 +145,7 @@ export default function NovoPostPage() {
   };
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr,400px]">
+    <div className="grid gap-8 lg:grid-cols-[1fr,280px]">
       <div>
         {/* Step indicator */}
         <div className="mb-8 flex items-center gap-2">
@@ -164,6 +182,10 @@ export default function NovoPostPage() {
               category={category}
               value={backgroundUrl}
               onChange={setBackgroundUrl}
+              sheetsBackgrounds={sheetsData
+                .filter((r) => r.urlBg)
+                .map((r) => r.urlBg)}
+              loading={sheetsLoading}
             />
           )}
           {step === 2 && (
@@ -171,13 +193,22 @@ export default function NovoPostPage() {
               category={category}
               value={text}
               onChange={setText}
+              sheetsRows={sheetsData.filter(
+                (r) => r.categoria === category && r.titulo
+              )}
             />
           )}
           {step === 3 && (
             <StepElements value={elements} onChange={setElements} />
           )}
           {step === 4 && (
-            <StepImage value={imageUrl} onChange={setImageUrl} />
+            <StepImage
+              value={imageUrl}
+              onChange={setImageUrl}
+              sheetsImages={sheetsData
+                .filter((r) => r.urlImg)
+                .map((r) => r.urlImg)}
+            />
           )}
           {step === 5 && (
             <div className="space-y-6">

@@ -19,15 +19,20 @@ export default function PostPreview({
   category,
 }: PostPreviewProps) {
   const layout = CATEGORY_LAYOUTS[category];
-  const colors = layout?.colors || { primary: "#1a1a1a", accent: "#4f8a3c", overlay: "rgba(0,0,0,0.5)" };
+  const colors = layout?.colors || {
+    primary: "#1a1a1a",
+    accent: "#4f8a3c",
+    overlay: "rgba(0,0,0,0.5)",
+  };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#333] shadow-xl">
+    <div className="overflow-hidden rounded-xl border border-[#333] shadow-xl">
       <div
-        className="relative"
+        className="relative w-full"
         style={{
           aspectRatio: "1080/1350",
           backgroundColor: colors.primary,
+          maxHeight: "420px",
         }}
       >
         {/* Layer 1: Background */}
@@ -39,13 +44,17 @@ export default function PostPreview({
           />
         )}
 
-        {/* Layer 2: Support image */}
+        {/* Layer 2: Support image - bottom portion, contained */}
         {imageUrl && (
-          <img
-            src={imageUrl}
-            alt="Support"
-            className="absolute bottom-0 left-0 h-[48%] w-full object-cover"
-          />
+          <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center"
+            style={{ height: "45%" }}
+          >
+            <img
+              src={imageUrl}
+              alt="Support"
+              className="max-h-full max-w-[80%] object-contain drop-shadow-lg"
+            />
+          </div>
         )}
 
         {/* Layer 3: Overlay */}
@@ -55,10 +64,10 @@ export default function PostPreview({
         />
 
         {/* Layer 4: Text */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-start px-4 pt-[8%] text-center">
           {text.hook && (
             <p
-              className="mb-2 text-[0.5rem] font-semibold leading-tight"
+              className="mb-1 text-[7px] font-semibold leading-tight"
               style={{ color: layout?.text.hook.color || "#FFD700" }}
             >
               {text.hook}
@@ -66,7 +75,7 @@ export default function PostPreview({
           )}
           {text.title && (
             <h2
-              className="mb-2 text-base font-extrabold leading-tight"
+              className="mb-1 text-[11px] font-extrabold leading-tight"
               style={{ color: "#FFFFFF" }}
             >
               {text.title}
@@ -74,7 +83,7 @@ export default function PostPreview({
           )}
           {text.subtitle && (
             <p
-              className="mb-2 text-[0.6rem] leading-tight"
+              className="mb-1 text-[8px] leading-tight"
               style={{ color: "#E0E0E0" }}
             >
               {text.subtitle}
@@ -82,7 +91,7 @@ export default function PostPreview({
           )}
           {text.description && (
             <p
-              className="mb-3 text-[0.45rem] leading-relaxed"
+              className="mb-2 text-[6px] leading-relaxed line-clamp-3"
               style={{ color: "#D0D0D0" }}
             >
               {text.description}
@@ -90,7 +99,7 @@ export default function PostPreview({
           )}
           {text.cta && (
             <p
-              className="mt-auto text-[0.5rem] font-bold"
+              className="text-[7px] font-bold"
               style={{ color: layout?.text.cta.color || "#FFD700" }}
             >
               {text.cta}
@@ -102,7 +111,7 @@ export default function PostPreview({
         {elements.map((el, i) => (
           <div
             key={i}
-            className="absolute h-3 w-3 rounded-sm opacity-50"
+            className="absolute h-2 w-2 rounded-sm opacity-50"
             style={{
               left: `${(el.x / 1080) * 100}%`,
               top: `${(el.y / 1350) * 100}%`,
@@ -114,7 +123,7 @@ export default function PostPreview({
         {/* No content placeholder */}
         {!background && !text.title && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-sm text-[#666]">Preview do post</p>
+            <p className="text-[10px] text-[#666]">Preview do post</p>
           </div>
         )}
       </div>

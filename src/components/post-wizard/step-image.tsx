@@ -5,23 +5,18 @@ import { useState } from "react";
 interface StepImageProps {
   value: string;
   onChange: (v: string) => void;
+  sheetsImages?: string[];
 }
 
-// Sample images from the user's existing URLs
-const SAMPLE_IMAGES = [
-  "https://tudomudou.com.br/customers/alchemypet/img/vet/1.png",
-  "https://tudomudou.com.br/customers/alchemypet/img/vet/2.png",
-  "https://tudomudou.com.br/customers/alchemypet/img/vet/3.png",
-  "https://tudomudou.com.br/customers/alchemypet/img/vet/4.png",
-  "https://tudomudou.com.br/customers/alchemypet/img/vet/5.png",
-  "https://tudomudou.com.br/customers/alchemypet/img/vet/6.png",
-  "https://tudomudou.com.br/customers/alchemypet/img/vet/7.png",
-  "https://tudomudou.com.br/customers/alchemypet/img/vet/8.png",
-  "https://tudomudou.com.br/customers/alchemypet/img/vet/9.png",
-];
-
-export default function StepImage({ value, onChange }: StepImageProps) {
+export default function StepImage({
+  value,
+  onChange,
+  sheetsImages = [],
+}: StepImageProps) {
   const [customUrl, setCustomUrl] = useState("");
+
+  // Remove duplicates
+  const uniqueImages = [...new Set(sheetsImages)];
 
   return (
     <div>
@@ -30,25 +25,40 @@ export default function StepImage({ value, onChange }: StepImageProps) {
         Selecione uma imagem ou cole uma URL. (Opcional)
       </p>
 
-      <div className="grid grid-cols-3 gap-3">
-        {SAMPLE_IMAGES.map((url, i) => (
-          <button
-            key={i}
-            onClick={() => onChange(url)}
-            className={`aspect-square overflow-hidden rounded-xl border-2 transition-all ${
-              value === url
-                ? "border-[#4f8a3c] ring-2 ring-[#4f8a3c] scale-105"
-                : "border-[#444] hover:border-[#666]"
-            }`}
-          >
-            <img
-              src={url}
-              alt={`Img ${i + 1}`}
-              className="h-full w-full object-cover"
-            />
-          </button>
-        ))}
-      </div>
+      {uniqueImages.length > 0 ? (
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+          {uniqueImages.map((url, i) => (
+            <button
+              key={i}
+              onClick={() => onChange(url)}
+              className={`aspect-square overflow-hidden rounded-xl border-2 transition-all ${
+                value === url
+                  ? "border-[#4f8a3c] ring-2 ring-[#4f8a3c] scale-105"
+                  : "border-[#444] hover:border-[#666]"
+              }`}
+            >
+              <img
+                src={url}
+                alt={`Img ${i + 1}`}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23333'%3E%3Crect width='100' height='100'/%3E%3Ctext x='50' y='50' text-anchor='middle' fill='%23666' font-size='12'%3EErro%3C/text%3E%3C/svg%3E";
+                }}
+              />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-[#444] bg-[#1a1a1a] p-6 text-center">
+          <p className="text-sm text-[#a0a0a0]">
+            Nenhuma imagem encontrada na planilha.
+          </p>
+          <p className="mt-1 text-xs text-[#666]">
+            Adicione URLs na coluna &quot;URL IMG&quot; ou cole uma URL abaixo.
+          </p>
+        </div>
+      )}
 
       <div className="mt-4">
         <p className="mb-2 text-sm text-[#a0a0a0]">Ou cole uma URL:</p>
