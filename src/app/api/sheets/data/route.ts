@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { readPendingRows } from "@/lib/google-sheets";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const rows = await readPendingRows();
     return NextResponse.json({ rows });
-  } catch (error) {
-    console.error("Sheets data error:", error);
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("Sheets data error:", message);
     return NextResponse.json(
-      { error: "Failed to read Google Sheets", rows: [] },
+      { error: message, rows: [] },
       { status: 500 }
     );
   }
