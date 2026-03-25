@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id            String     @id @default(cuid())
+  type          PostType   @default(FEED)
+  category      String
+  status        PostStatus @default(DRAFT)
+
+  title         String?
+  subtitle      String?
+  hook          String?
+  description   String?
+  cta           String?
+
+  backgroundUrl String?
+  imageUrl      String?
+  elements      Json?
+
+  outputUrl     String?
+
+  scheduledAt   DateTime?
+  publishedAt   DateTime?
+
+  sheetsRowId   String?    @unique
+  mode          String?
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+enum PostType {
+  FEED
+  CAROUSEL
+}
+
+enum PostStatus {
+  DRAFT
+  RENDERING
+  RENDERED
+  SCHEDULED
+  PUBLISHED
+  FAILED
+}
