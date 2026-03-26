@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect, useState } from "react";
 import type { PostText, PostElement, FontMode } from "@/types/post";
 
 interface PostPreviewProps {
@@ -11,6 +12,9 @@ interface PostPreviewProps {
   fontMode?: FontMode;
 }
 
+const DESIGN_W = 540;
+const DESIGN_H = 675;
+
 export default function PostPreview({
   background,
   text,
@@ -18,12 +22,27 @@ export default function PostPreview({
   imageUrl,
   fontMode = "dark",
 }: PostPreviewProps) {
-  // Dark mode = white text on dark bg, Light mode = dark text on light bg
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const w = entry.contentRect.width;
+        setScale(w / DESIGN_W);
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const isDark = fontMode === "dark";
   const colors = {
     hook: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.45)",
     title: isDark ? "#FFFFFF" : "#1a1a1a",
-    divider: isDark ? "#D4A62A" : "#D4A62A",
+    divider: "#D4A62A",
     subtitle: isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.7)",
     description: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
     ctaLabel: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)",
@@ -31,12 +50,17 @@ export default function PostPreview({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#333] shadow-xl">
+    <div
+      ref={containerRef}
+      className="overflow-hidden rounded-xl border border-[#333] shadow-xl"
+      style={{ aspectRatio: `${DESIGN_W}/${DESIGN_H}` }}
+    >
       <div
-        className="relative"
+        className="relative origin-top-left"
         style={{
-          width: "540px",
-          height: "675px",
+          width: `${DESIGN_W}px`,
+          height: `${DESIGN_H}px`,
+          transform: `scale(${scale})`,
           backgroundColor: "#1a1a1a",
         }}
       >
@@ -49,7 +73,7 @@ export default function PostPreview({
           />
         )}
 
-        {/* Layer 2: Support image - full size */}
+        {/* Layer 2: Support image - full size, right aligned */}
         {imageUrl && (
           <div
             className="absolute inset-0 flex items-end justify-end"
@@ -64,7 +88,7 @@ export default function PostPreview({
           </div>
         )}
 
-        {/* Layer 3: Text - left side, filling ~60% width, ~70% height */}
+        {/* Layer 3: Text - left side */}
         {(text.hook || text.title || text.description || text.cta) && (
           <div
             className="absolute flex flex-col justify-start"
@@ -76,12 +100,11 @@ export default function PostPreview({
               zIndex: 5,
             }}
           >
-            {/* Hook */}
             {text.hook && (
               <p
                 className="font-medium uppercase"
                 style={{
-                  fontSize: "10px",
+                  fontSize: "11px",
                   color: colors.hook,
                   letterSpacing: "2px",
                   marginBottom: "10px",
@@ -92,12 +115,11 @@ export default function PostPreview({
               </p>
             )}
 
-            {/* Title */}
             {text.title && (
               <h2
-                className="font-bold leading-tight"
+                className="font-bold"
                 style={{
-                  fontSize: "28px",
+                  fontSize: "30px",
                   color: colors.title,
                   lineHeight: 1.1,
                 }}
@@ -106,7 +128,6 @@ export default function PostPreview({
               </h2>
             )}
 
-            {/* Divider line */}
             <div
               style={{
                 width: "40px",
@@ -117,12 +138,11 @@ export default function PostPreview({
               }}
             />
 
-            {/* Subtitle */}
             {text.subtitle && (
               <p
-                className="font-light leading-relaxed"
+                className="font-light"
                 style={{
-                  fontSize: "13px",
+                  fontSize: "14px",
                   color: colors.subtitle,
                   lineHeight: 1.5,
                 }}
@@ -131,12 +151,11 @@ export default function PostPreview({
               </p>
             )}
 
-            {/* Description */}
             {text.description && (
               <p
-                className="font-light leading-relaxed"
+                className="font-light"
                 style={{
-                  fontSize: "11px",
+                  fontSize: "12px",
                   color: colors.description,
                   lineHeight: 1.6,
                   marginTop: "10px",
@@ -146,16 +165,15 @@ export default function PostPreview({
               </p>
             )}
 
-            {/* CTA with golden line */}
             {text.cta && (
               <div
                 className="flex items-center gap-2"
-                style={{ marginTop: "18px" }}
+                style={{ marginTop: "20px" }}
               >
                 <div
                   style={{
                     width: "3px",
-                    height: "28px",
+                    height: "30px",
                     background: colors.divider,
                     borderRadius: "2px",
                     flexShrink: 0,
@@ -175,7 +193,7 @@ export default function PostPreview({
                   <p
                     className="font-semibold"
                     style={{
-                      fontSize: "12px",
+                      fontSize: "13px",
                       color: colors.cta,
                     }}
                   >
