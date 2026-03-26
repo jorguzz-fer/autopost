@@ -32,7 +32,6 @@ export default function PostPreview({
         style={{
           aspectRatio: "1080/1350",
           backgroundColor: colors.primary,
-          maxHeight: "420px",
         }}
       >
         {/* Layer 1: Background */}

@@ -1,22 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface StepImageProps {
   value: string;
   onChange: (v: string) => void;
-  sheetsImages?: string[];
 }
 
 export default function StepImage({
   value,
   onChange,
-  sheetsImages = [],
 }: StepImageProps) {
   const [customUrl, setCustomUrl] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Remove duplicates
-  const uniqueImages = [...new Set(sheetsImages)];
+  useEffect(() => {
+    async function loadImages() {
+      try {
+        const res = await fetch("/api/media?type=images");
+        const data = await res.json();
+        setImages(data.urls || []);
+      } catch (error) {
+        console.error("Error loading images:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadImages();
+  }, []);
 
   return (
     <div>
@@ -25,9 +37,16 @@ export default function StepImage({
         Selecione uma imagem ou cole uma URL. (Opcional)
       </p>
 
-      {uniqueImages.length > 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#4f8a3c] border-t-transparent" />
+          <span className="ml-3 text-sm text-[#a0a0a0]">
+            Carregando imagens...
+          </span>
+        </div>
+      ) : images.length > 0 ? (
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-          {uniqueImages.map((url, i) => (
+          {images.map((url, i) => (
             <button
               key={i}
               onClick={() => onChange(url)}
@@ -52,10 +71,10 @@ export default function StepImage({
       ) : (
         <div className="rounded-xl border border-[#444] bg-[#1a1a1a] p-6 text-center">
           <p className="text-sm text-[#a0a0a0]">
-            Nenhuma imagem encontrada na planilha.
+            Nenhuma imagem encontrada.
           </p>
           <p className="mt-1 text-xs text-[#666]">
-            Adicione URLs na coluna &quot;URL IMG&quot; ou cole uma URL abaixo.
+            Acesse a <a href="/dashboard/media" className="text-[#4f8a3c] underline">Biblioteca de Imagens</a> para fazer upload.
           </p>
         </div>
       )}

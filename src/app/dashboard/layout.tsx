@@ -20,6 +20,12 @@ export default function DashboardLayout({
               Posts
             </Link>
             <Link
+              href="/dashboard/media"
+              className="text-sm text-[#a0a0a0] hover:text-white transition-colors"
+            >
+              Imagens
+            </Link>
+            <Link
               href="/dashboard/novo"
               className="rounded-lg bg-[#4f8a3c] px-4 py-2 text-sm font-medium text-white hover:bg-[#5ea048] transition-colors"
             >

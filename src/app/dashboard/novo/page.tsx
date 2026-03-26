@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { CATEGORIES } from "@/types/post";
 import type { PostText, PostElement, SheetsRow } from "@/types/post";
 import { CATEGORY_LAYOUTS } from "@/lib/categories";
@@ -43,7 +43,7 @@ export default function NovoPostPage() {
   const [sheetsData, setSheetsData] = useState<SheetsRow[]>([]);
   const [sheetsLoading, setSheetsLoading] = useState(true);
 
-  // Load sheets data on mount
+  // Load sheets data on mount (only for text content)
   useEffect(() => {
     async function loadSheets() {
       try {
@@ -145,7 +145,7 @@ export default function NovoPostPage() {
   };
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr,280px]">
+    <div className="grid gap-8 lg:grid-cols-[1fr,240px]">
       <div>
         {/* Step indicator */}
         <div className="mb-8 flex items-center gap-2">
@@ -182,10 +182,6 @@ export default function NovoPostPage() {
               category={category}
               value={backgroundUrl}
               onChange={setBackgroundUrl}
-              sheetsBackgrounds={sheetsData
-                .filter((r) => r.urlBg)
-                .map((r) => r.urlBg)}
-              loading={sheetsLoading}
             />
           )}
           {step === 2 && (
@@ -205,9 +201,6 @@ export default function NovoPostPage() {
             <StepImage
               value={imageUrl}
               onChange={setImageUrl}
-              sheetsImages={sheetsData
-                .filter((r) => r.urlImg)
-                .map((r) => r.urlImg)}
             />
           )}
           {step === 5 && (
@@ -269,25 +262,23 @@ export default function NovoPostPage() {
               disabled={!canNext()}
               className="rounded-lg bg-[#4f8a3c] px-8 py-2 font-medium text-white hover:bg-[#5ea048] disabled:opacity-30 transition-colors"
             >
-              Próximo
+              Pr&oacute;ximo
             </button>
           </div>
         )}
       </div>
 
-      {/* Live preview sidebar */}
+      {/* Live preview sidebar - compact */}
       <div className="hidden lg:block">
         <div className="sticky top-8">
           <p className="mb-3 text-sm font-medium text-[#a0a0a0]">Preview</p>
-          <div className="max-w-[240px]">
-            <PostPreview
-              background={backgroundUrl}
-              text={text}
-              elements={elements}
-              imageUrl={imageUrl}
-              category={category}
-            />
-          </div>
+          <PostPreview
+            background={backgroundUrl}
+            text={text}
+            elements={elements}
+            imageUrl={imageUrl}
+            category={category}
+          />
         </div>
       </div>
     </div>

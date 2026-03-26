@@ -1,26 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface StepBackgroundProps {
   category: string;
   value: string;
   onChange: (v: string) => void;
-  sheetsBackgrounds?: string[];
-  loading?: boolean;
 }
 
 export default function StepBackground({
   category,
   value,
   onChange,
-  sheetsBackgrounds = [],
-  loading = false,
 }: StepBackgroundProps) {
   const [customUrl, setCustomUrl] = useState("");
+  const [backgrounds, setBackgrounds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Remove duplicates
-  const uniqueBackgrounds = [...new Set(sheetsBackgrounds)];
+  useEffect(() => {
+    async function loadBackgrounds() {
+      try {
+        const res = await fetch("/api/media?type=backgrounds");
+        const data = await res.json();
+        setBackgrounds(data.urls || []);
+      } catch (error) {
+        console.error("Error loading backgrounds:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadBackgrounds();
+  }, []);
 
   return (
     <div>
@@ -30,12 +40,12 @@ export default function StepBackground({
         <div className="flex items-center justify-center py-12">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#4f8a3c] border-t-transparent" />
           <span className="ml-3 text-sm text-[#a0a0a0]">
-            Carregando backgrounds da planilha...
+            Carregando backgrounds...
           </span>
         </div>
-      ) : uniqueBackgrounds.length > 0 ? (
+      ) : backgrounds.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {uniqueBackgrounds.map((url, i) => (
+          {backgrounds.map((url, i) => (
             <button
               key={i}
               onClick={() => onChange(url)}
@@ -60,10 +70,10 @@ export default function StepBackground({
       ) : (
         <div className="rounded-xl border border-[#444] bg-[#1a1a1a] p-6 text-center">
           <p className="text-sm text-[#a0a0a0]">
-            Nenhum background encontrado na planilha.
+            Nenhum background encontrado.
           </p>
           <p className="mt-1 text-xs text-[#666]">
-            Adicione URLs na coluna &quot;URL BG&quot; da planilha.
+            Acesse a <a href="/dashboard/media" className="text-[#4f8a3c] underline">Biblioteca de Imagens</a> para fazer upload.
           </p>
         </div>
       )}
