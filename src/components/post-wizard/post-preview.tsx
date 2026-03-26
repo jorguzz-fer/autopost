@@ -1,7 +1,6 @@
 "use client";
 
 import type { PostText, PostElement } from "@/types/post";
-import { CATEGORY_LAYOUTS } from "@/lib/categories";
 
 interface PostPreviewProps {
   background: string;
@@ -16,22 +15,14 @@ export default function PostPreview({
   text,
   elements,
   imageUrl,
-  category,
 }: PostPreviewProps) {
-  const layout = CATEGORY_LAYOUTS[category];
-  const colors = layout?.colors || {
-    primary: "#1a1a1a",
-    accent: "#4f8a3c",
-    overlay: "rgba(0,0,0,0.5)",
-  };
-
   return (
     <div className="overflow-hidden rounded-xl border border-[#333] shadow-xl">
       <div
         className="relative w-full"
         style={{
           aspectRatio: "1080/1350",
-          backgroundColor: colors.primary,
+          backgroundColor: "#1a1a1a",
         }}
       >
         {/* Layer 1: Background */}
@@ -43,70 +34,142 @@ export default function PostPreview({
           />
         )}
 
-        {/* Layer 2: Support image - bottom portion, contained */}
+        {/* Layer 2: Support image - bottom right */}
         {imageUrl && (
-          <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center"
-            style={{ height: "45%" }}
+          <div
+            className="absolute bottom-0 right-0 flex items-end justify-end"
+            style={{ width: "55%", height: "50%", zIndex: 2 }}
           >
             <img
               src={imageUrl}
               alt="Support"
-              className="max-h-full max-w-[80%] object-contain drop-shadow-lg"
+              className="max-h-full max-w-full object-contain drop-shadow-lg"
             />
           </div>
         )}
 
-        {/* Layer 3: Overlay */}
-        <div
-          className="absolute inset-0"
-          style={{ backgroundColor: colors.overlay }}
-        />
+        {/* Layer 3: Text card - left side, inspired by motor-design layout */}
+        {(text.hook || text.title || text.description || text.cta) && (
+          <div
+            className="absolute flex flex-col justify-start"
+            style={{
+              left: "5%",
+              top: "12%",
+              width: "50%",
+              zIndex: 5,
+            }}
+          >
+            {/* Hook */}
+            {text.hook && (
+              <p
+                className="font-medium uppercase tracking-widest"
+                style={{
+                  fontSize: "5px",
+                  color: "rgba(255,255,255,0.5)",
+                  letterSpacing: "1.5px",
+                  marginBottom: "6px",
+                }}
+              >
+                {text.hook}
+              </p>
+            )}
 
-        {/* Layer 4: Text */}
-        <div className="absolute inset-0 flex flex-col items-center justify-start px-4 pt-[8%] text-center">
-          {text.hook && (
-            <p
-              className="mb-1 text-[7px] font-semibold leading-tight"
-              style={{ color: layout?.text.hook.color || "#FFD700" }}
-            >
-              {text.hook}
-            </p>
-          )}
-          {text.title && (
-            <h2
-              className="mb-1 text-[11px] font-extrabold leading-tight"
-              style={{ color: "#FFFFFF" }}
-            >
-              {text.title}
-            </h2>
-          )}
-          {text.subtitle && (
-            <p
-              className="mb-1 text-[8px] leading-tight"
-              style={{ color: "#E0E0E0" }}
-            >
-              {text.subtitle}
-            </p>
-          )}
-          {text.description && (
-            <p
-              className="mb-2 text-[6px] leading-relaxed line-clamp-3"
-              style={{ color: "#D0D0D0" }}
-            >
-              {text.description}
-            </p>
-          )}
-          {text.cta && (
-            <p
-              className="text-[7px] font-bold"
-              style={{ color: layout?.text.cta.color || "#FFD700" }}
-            >
-              {text.cta}
-            </p>
-          )}
-        </div>
+            {/* Title */}
+            {text.title && (
+              <h2
+                className="font-bold leading-tight"
+                style={{
+                  fontSize: "12px",
+                  color: "#FFFFFF",
+                  lineHeight: 1.1,
+                }}
+              >
+                {text.title}
+              </h2>
+            )}
 
-        {/* Elements indicators */}
+            {/* Divider line */}
+            <div
+              style={{
+                width: "18px",
+                height: "1.5px",
+                background: "#D4A62A",
+                borderRadius: "2px",
+                margin: "6px 0",
+              }}
+            />
+
+            {/* Subtitle */}
+            {text.subtitle && (
+              <p
+                className="font-light leading-relaxed"
+                style={{
+                  fontSize: "6px",
+                  color: "rgba(255,255,255,0.8)",
+                  lineHeight: 1.6,
+                }}
+              >
+                {text.subtitle}
+              </p>
+            )}
+
+            {/* Description */}
+            {text.description && (
+              <p
+                className="font-light leading-relaxed"
+                style={{
+                  fontSize: "5px",
+                  color: "rgba(255,255,255,0.7)",
+                  lineHeight: 1.65,
+                  marginTop: "4px",
+                }}
+              >
+                {text.description}
+              </p>
+            )}
+
+            {/* CTA with golden line */}
+            {text.cta && (
+              <div
+                className="flex items-center gap-1"
+                style={{ marginTop: "8px" }}
+              >
+                <div
+                  style={{
+                    width: "1.5px",
+                    height: "12px",
+                    background: "#D4A62A",
+                    borderRadius: "1px",
+                    flexShrink: 0,
+                  }}
+                />
+                <div>
+                  <p
+                    className="uppercase"
+                    style={{
+                      fontSize: "3.5px",
+                      color: "rgba(255,255,255,0.4)",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    Lembre-se
+                  </p>
+                  <p
+                    className="font-semibold"
+                    style={{
+                      fontSize: "5.5px",
+                      color: "#D4A62A",
+                    }}
+                  >
+                    {text.cta}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Elements */}
         {elements.map((el, i) => (
           <div
             key={i}
@@ -114,7 +177,7 @@ export default function PostPreview({
             style={{
               left: `${(el.x / 1080) * 100}%`,
               top: `${(el.y / 1350) * 100}%`,
-              backgroundColor: colors.accent,
+              backgroundColor: "#D4A62A",
             }}
           />
         ))}
