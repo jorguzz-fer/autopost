@@ -269,16 +269,18 @@ export default function NovoPostPage() {
       </div>
 
       {/* Live preview sidebar - compact */}
-      <div className="hidden lg:block">
+      <div className="mt-6 lg:mt-0">
         <div className="sticky top-8">
           <p className="mb-3 text-sm font-medium text-[#a0a0a0]">Preview</p>
-          <PostPreview
-            background={backgroundUrl}
-            text={text}
-            elements={elements}
-            imageUrl={imageUrl}
-            category={category}
-          />
+          <div className="mx-auto w-[200px] lg:w-full lg:max-w-[240px]">
+            <PostPreview
+              background={backgroundUrl}
+              text={text}
+              elements={elements}
+              imageUrl={imageUrl}
+              category={category}
+            />
+          </div>
         </div>
       </div>
     </div>
