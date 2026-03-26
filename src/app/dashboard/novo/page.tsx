@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { CATEGORIES } from "@/types/post";
-import type { PostText, PostElement, SheetsRow } from "@/types/post";
-import { CATEGORY_LAYOUTS } from "@/lib/categories";
+import type { PostText, PostElement, SheetsRow, FontMode } from "@/types/post";
 import StepType from "@/components/post-wizard/step-type";
 import StepCategory from "@/components/post-wizard/step-category";
 import StepBackground from "@/components/post-wizard/step-background";
@@ -42,6 +41,7 @@ export default function NovoPostPage() {
   const [saved, setSaved] = useState(false);
   const [sheetsData, setSheetsData] = useState<SheetsRow[]>([]);
   const [sheetsLoading, setSheetsLoading] = useState(true);
+  const [fontMode, setFontMode] = useState<FontMode>("dark");
 
   // Load sheets data on mount (only for text content)
   useEffect(() => {
@@ -81,9 +81,10 @@ export default function NovoPostPage() {
         text,
         elements,
         image: imageUrl
-          ? { url: imageUrl, x: 0, y: 700, width: 1080, height: 650 }
+          ? { url: imageUrl, x: 0, y: 0, width: 1080, height: 1350 }
           : undefined,
         category,
+        fontMode,
       }),
     });
     const data = await res.json();
@@ -123,9 +124,10 @@ export default function NovoPostPage() {
           text,
           elements,
           image: imageUrl
-            ? { url: imageUrl, x: 0, y: 700, width: 1080, height: 650 }
+            ? { url: imageUrl, x: 0, y: 0, width: 1080, height: 1350 }
             : undefined,
           category,
+          fontMode,
         }),
       });
 
@@ -205,9 +207,63 @@ export default function NovoPostPage() {
           )}
           {step === 5 && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-white">Preview & Salvar</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Preview & Salvar</h2>
+                {/* Light/Dark toggle */}
+                <div className="flex items-center gap-3 rounded-xl border border-[#444] bg-[#1a1a1a] px-4 py-2">
+                  <span className="text-xs text-[#a0a0a0]">Fontes:</span>
+                  <button
+                    onClick={() => {
+                      setFontMode("light");
+                      setPreviewUrl("");
+                      setTimeout(() => {
+                        fetch("/api/render?format=base64", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            background: backgroundUrl, text, elements,
+                            image: imageUrl ? { url: imageUrl, x: 0, y: 0, width: 1080, height: 1350 } : undefined,
+                            category, fontMode: "light",
+                          }),
+                        }).then(r => r.json()).then(d => d.image && setPreviewUrl(`data:image/png;base64,${d.image}`));
+                      }, 100);
+                    }}
+                    className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
+                      fontMode === "light"
+                        ? "bg-white text-black"
+                        : "bg-[#333] text-[#888] hover:text-white"
+                    }`}
+                  >
+                    Light
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFontMode("dark");
+                      setPreviewUrl("");
+                      setTimeout(() => {
+                        fetch("/api/render?format=base64", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            background: backgroundUrl, text, elements,
+                            image: imageUrl ? { url: imageUrl, x: 0, y: 0, width: 1080, height: 1350 } : undefined,
+                            category, fontMode: "dark",
+                          }),
+                        }).then(r => r.json()).then(d => d.image && setPreviewUrl(`data:image/png;base64,${d.image}`));
+                      }, 100);
+                    }}
+                    className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
+                      fontMode === "dark"
+                        ? "bg-[#333] text-white border border-white/30"
+                        : "bg-[#333] text-[#888] hover:text-white"
+                    }`}
+                  >
+                    Dark
+                  </button>
+                </div>
+              </div>
               {previewUrl ? (
-                <div className="mx-auto max-w-sm">
+                <div className="mx-auto" style={{ width: "540px" }}>
                   <div className="overflow-hidden rounded-2xl border-4 border-[#333] shadow-xl">
                     <img
                       src={previewUrl}
@@ -279,6 +335,7 @@ export default function NovoPostPage() {
               elements={elements}
               imageUrl={imageUrl}
               category={category}
+              fontMode={fontMode}
             />
           </div>
         </div>

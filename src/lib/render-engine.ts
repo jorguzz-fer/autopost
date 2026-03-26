@@ -35,7 +35,6 @@ function drawTextBlock(
   fontWeight: string,
   lineHeight: number,
   color: string,
-  letterSpacing?: number,
   uppercase?: boolean
 ): number {
   const displayText = uppercase ? text.toUpperCase() : text;
@@ -59,7 +58,18 @@ export async function renderPost(input: RenderInput): Promise<Buffer> {
   const canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   const ctx = canvas.getContext("2d");
 
-  // Layer 1: Background (no overlay!)
+  const isDark = (input.fontMode || "dark") === "dark";
+  const colors = {
+    hook: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.45)",
+    title: isDark ? "#FFFFFF" : "#1a1a1a",
+    divider: "#D4A62A",
+    subtitle: isDark ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.7)",
+    description: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
+    ctaLabel: isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)",
+    cta: isDark ? "#D4A62A" : "#8B6914",
+  };
+
+  // Layer 1: Background
   if (input.background) {
     try {
       const bg = await loadImage(input.background);
@@ -73,19 +83,16 @@ export async function renderPost(input: RenderInput): Promise<Buffer> {
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   }
 
-  // Layer 2: Support image - bottom right
+  // Layer 2: Support image - full size, aligned bottom-right
   if (input.image?.url) {
     try {
       const img = await loadImage(input.image.url);
-      // Position bottom-right, max 55% width, max 50% height
-      const maxW = CANVAS_WIDTH * 0.55;
-      const maxH = CANVAS_HEIGHT * 0.5;
-      const scale = Math.min(maxW / img.width, maxH / img.height);
+      // Full height, maintain aspect ratio, align right
+      const scale = CANVAS_HEIGHT / img.height;
       const w = img.width * scale;
-      const h = img.height * scale;
+      const h = CANVAS_HEIGHT;
       const x = CANVAS_WIDTH - w;
-      const y = CANVAS_HEIGHT - h;
-      ctx.drawImage(img, x, y, w, h);
+      ctx.drawImage(img, x, 0, w, h);
     } catch {
       // Skip if image fails to load
     }
@@ -108,21 +115,21 @@ export async function renderPost(input: RenderInput): Promise<Buffer> {
     }
   }
 
-  // Layer 4: Text - inspired by motor-design layout
-  const marginLeft = 96;
-  const textMaxWidth = 500;
-  let cursorY = 160;
+  // Layer 4: Text - left side, filling ~60% width, ~75% height
+  const marginLeft = 54;  // ~5% of 1080
+  const textMaxWidth = 626; // ~58% of 1080
+  let cursorY = 108; // ~8% of 1350
 
   // Hook (small uppercase)
   if (input.text.hook) {
     cursorY = drawTextBlock(
       ctx, input.text.hook,
       marginLeft, cursorY, textMaxWidth,
-      20, "500", 1.3,
-      "rgba(255,255,255,0.5)",
-      3, true
+      22, "500", 1.4,
+      colors.hook,
+      true
     );
-    cursorY += 24;
+    cursorY += 28;
   }
 
   // Title (large bold)
@@ -130,28 +137,28 @@ export async function renderPost(input: RenderInput): Promise<Buffer> {
     cursorY = drawTextBlock(
       ctx, input.text.title,
       marginLeft, cursorY, textMaxWidth,
-      60, "700", 1.1,
-      "#FFFFFF"
+      58, "700", 1.1,
+      colors.title
     );
-    cursorY += 8;
+    cursorY += 12;
   }
 
   // Divider line (golden)
-  ctx.fillStyle = "#D4A62A";
+  ctx.fillStyle = colors.divider;
   ctx.beginPath();
-  ctx.roundRect(marginLeft, cursorY, 72, 5, 4);
+  ctx.roundRect(marginLeft, cursorY, 80, 6, 4);
   ctx.fill();
-  cursorY += 32;
+  cursorY += 36;
 
   // Subtitle
   if (input.text.subtitle) {
     cursorY = drawTextBlock(
       ctx, input.text.subtitle,
       marginLeft, cursorY, textMaxWidth,
-      26, "300", 1.6,
-      "rgba(255,255,255,0.85)"
+      28, "300", 1.5,
+      colors.subtitle
     );
-    cursorY += 12;
+    cursorY += 20;
   }
 
   // Description
@@ -159,33 +166,33 @@ export async function renderPost(input: RenderInput): Promise<Buffer> {
     cursorY = drawTextBlock(
       ctx, input.text.description,
       marginLeft, cursorY, textMaxWidth,
-      24, "300", 1.65,
-      "rgba(255,255,255,0.7)"
+      24, "300", 1.6,
+      colors.description
     );
-    cursorY += 16;
+    cursorY += 20;
   }
 
   // CTA with golden vertical line
   if (input.text.cta) {
-    cursorY += 28;
+    cursorY += 32;
 
     // Golden vertical bar
-    ctx.fillStyle = "#D4A62A";
+    ctx.fillStyle = colors.divider;
     ctx.beginPath();
-    ctx.roundRect(marginLeft, cursorY, 5, 52, 4);
+    ctx.roundRect(marginLeft, cursorY, 6, 56, 4);
     ctx.fill();
 
     // "Lembre-se" label
-    ctx.fillStyle = "rgba(255,255,255,0.4)";
-    ctx.font = "400 15px sans-serif";
+    ctx.fillStyle = colors.ctaLabel;
+    ctx.font = "400 16px sans-serif";
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
     ctx.fillText("LEMBRE-SE", marginLeft + 24, cursorY + 2);
 
     // CTA text
-    ctx.fillStyle = "#D4A62A";
-    ctx.font = "600 23px sans-serif";
-    ctx.fillText(input.text.cta, marginLeft + 24, cursorY + 24);
+    ctx.fillStyle = colors.cta;
+    ctx.font = "600 24px sans-serif";
+    ctx.fillText(input.text.cta, marginLeft + 24, cursorY + 26);
   }
 
   return Buffer.from(canvas.toBuffer("image/png"));

@@ -21,12 +21,15 @@ export interface PostImage {
   height: number;
 }
 
+export type FontMode = "dark" | "light";
+
 export interface RenderInput {
   background: string;
   text: PostText;
   elements: PostElement[];
   image?: PostImage;
   category: string;
+  fontMode?: FontMode;
 }
 
 export interface SheetsRow {
